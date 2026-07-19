@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank – Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --black:   #050508;
+            --panel:   #0d0d12;
+            --panel2:  #0f0f16;
+            --border:  #1e1e2e;
+            --orange:  #ff8c00;
+            --orange2: #ffa733;
+            --red:     #ff3333;
+            --green:   #00ff88;
+            --blue:    #4488ff;
+            --muted:   #555570;
+            --text:    #c8c8d8;
+            --mono:    'Share Tech Mono', monospace;
+            --sans:    'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,140,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,140,0,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        .nav-brand span { color: var(--orange); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+        .nav-user .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        .logout-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* ── WALLET CARD ── */
+        .wallet-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--orange), transparent);
+        }
+        .wallet-card::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,140,0,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .wallet-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        .wallet-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .wallet-balance {
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+        }
+        .wallet-balance .currency {
+            font-size: 24px;
+            color: var(--orange);
+            vertical-align: top;
+            margin-top: 8px;
+            margin-right: 4px;
+            display: inline-block;
+        }
+
+        .wallet-badge {
+            padding: 6px 14px;
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 20px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--green);
+            letter-spacing: 1px;
+        }
+
+        .wallet-meta {
+            display: flex;
+            gap: 32px;
+            margin-top: 8px;
+        }
+        .wallet-meta-item {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .wallet-meta-item b { color: var(--text); }
+
+        /* ── GRID ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .section-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── ACTION BUTTONS ── */
+        .action-btn {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 8px;
+            border: 1px solid;
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .action-btn:last-child { margin-bottom: 0; }
+
+        .btn-primary {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #000;
+        }
+        .btn-primary:hover { background: var(--orange2); box-shadow: 0 0 16px rgba(255,140,0,0.3); }
+
+        .btn-danger {
+            background: rgba(255,51,51,0.08);
+            border-color: rgba(255,51,51,0.3);
+            color: var(--red);
+        }
+        .btn-danger:hover { background: rgba(255,51,51,0.15); border-color: var(--red); box-shadow: 0 0 16px rgba(255,51,51,0.2); }
+
+        .btn-warning {
+            background: rgba(255,140,0,0.08);
+            border-color: rgba(255,140,0,0.3);
+            color: var(--orange);
+        }
+        .btn-warning:hover { background: rgba(255,140,0,0.15); border-color: var(--orange); }
+
+        .btn-blue {
+            background: rgba(68,136,255,0.08);
+            border-color: rgba(68,136,255,0.3);
+            color: var(--blue);
+        }
+        .btn-blue:hover { background: rgba(68,136,255,0.15); border-color: var(--blue); }
+
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-icon { font-size: 18px; flex-shrink: 0; }
+        .btn-text { flex: 1; }
+        .btn-label { display: block; font-weight: 700; font-size: 14px; }
+        .btn-sub { display: block; font-size: 10px; font-family: var(--mono); opacity: 0.6; margin-top: 1px; }
+
+        /* ── IDS TERMINAL ── */
+        .ids-terminal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        .terminal-header {
+            background: #090910;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .terminal-dots span {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+        .td-red { background: #ff5f57; }
+        .td-yellow { background: #febc2e; }
+        .td-green { background: #28c840; }
+
+        .terminal-title {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .terminal-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--green);
+        }
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.5s infinite;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            min-height: 180px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .log-line {
+            margin-bottom: 6px;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s;
+        }
+        .log-line.show { opacity: 1; transform: translateX(0); }
+        .log-time { color: #333345; margin-right: 10px; }
+        .log-ok { color: var(--green); }
+        .log-warn { color: var(--orange); }
+        .log-attack { color: var(--red); }
+        .log-info { color: var(--blue); }
+
+        /* ── Alert Banner ── */
+        .alert-banner {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-top: 0;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--mono);
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        .alert-banner.visible { display: flex; }
+        .alert-attack {
+            background: rgba(255,51,51,0.1);
+            border: 1px solid rgba(255,51,51,0.3);
+            color: var(--red);
+        }
+        .alert-normal {
+            background: rgba(0,255,136,0.07);
+            border: 1px solid rgba(0,255,136,0.2);
+            color: var(--green);
+        }
+
+        /* ── Flash ── */
+        .flash-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,30,30,0.07);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+            z-index: 999;
+        }
+        .flash-overlay.flash { opacity: 1; }
+
+        /* ── Transfer CTA ── */
+        .transfer-cta {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .transfer-cta-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .transfer-cta-text p {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .transfer-cta-btn {
+            padding: 12px 28px;
+            background: var(--orange);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .transfer-cta-btn:hover { background: var(--orange2); box-shadow: 0 0 20px rgba(255,140,0,0.4); }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .wallet-balance { font-size: 36px; }
+            .transfer-cta { flex-direction: column; gap: 16px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<nav>
+    <div class="nav-brand">Secure<span>Bank</span></div>
+    <div class="nav-right">
+        <div class="nav-user">
+            <div class="dot"></div>
+            <span>{{ username | upper }}</span>
+        </div>
+        <a href="/logout" class="logout-btn">LOGOUT</a>
+    </div>
+</nav>
+
+<main>
+
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+        <span id="alertIcon">⚠</span>
+        <span id="alertText">IDS Alert</span>
+    </div>
+
+    <!-- Wallet Card -->
+    <div class="wallet-card">
+        <div class="wallet-top">
+            <div>
+                <div class="wallet-label">// DEMO WALLET BALANCE //</div>
+                <div class="wallet-balance" id="walletBalance">
+                    <span class="currency">₦</span><span id="balanceNum">{{ "%.2f"|format(balance) }}</span>
+                </div>
+            </div>
+            <div class="wallet-badge">● ONLINE</div>
+        </div>
+        <div class="wallet-meta">
+            <div class="wallet-meta-item">ACCOUNT: <b>{{ account_number }}</b></div>
+            <div class="wallet-meta-item">TYPE: <b>SAVINGS</b></div>
+            <div class="wallet-meta-item">SECURITY: <b>AI-IDS ACTIVE</b></div>
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-2">
+
+        <!-- Normal Actions -->
+        <div class="section-card">
+            <div class="section-title">// NORMAL TRANSACTIONS //</div>
+            <button class="action-btn btn-primary" onclick="goTransfer()">
+                <span class="btn-icon">💸</span>
+                <span class="btn-text">
+                    <span class="btn-label">Transfer Money</span>
+                    <span class="btn-sub">OPENS TRANSFER PAGE → SQL INJECTION SIM</span>
+                </span>
+            </button>
+            <button class="action-btn btn-primary" onclick="goAirtime()">
+                <span class="btn-icon">📱</span>
+                <span class="btn-text">
+                    <span class="btn-label">Buy Airtime</span>
+                    <span class="btn-sub">OPENS AIRTIME PAGE → SQL INJECTION SIM</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Attack Simulations -->
+        <div class="section-card">
+            <div class="section-title">// ATTACK SIMULATION //</div>
+            <button class="action-btn btn-danger" onclick="simulateAttack('dos')" id="dosBtn">
+                <span class="btn-icon">💥</span>
+                <span class="btn-text">
+                    <span class="btn-label">Simulate DoS Flood</span>
+                    <span class="btn-sub">HIGH-VOLUME PACKET BURST</span>
+                </span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- IDS Terminal -->
+    <div class="ids-terminal">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="td-red"></span>
+                <span class="td-yellow"></span>
+                <span class="td-green"></span>
+            </div>
+            <div class="terminal-title">AI-IDS LIVE MONITOR</div>
+            <div class="terminal-status">
+                <div class="status-dot"></div>
+                MONITORING
+            </div>
+        </div>
+        <div class="terminal-body" id="terminalBody">
+            <!-- logs injected here -->
+        </div>
+    </div>
+
+
+
+</main>
+
+<script>
+const logEntries = [];
+
+function now() {
+    return new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function addLog(msg, cls = 'log-info') {
+    const body = document.getElementById('terminalBody');
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">[${now()}]</span><span class="${cls}">${msg}</span>`;
+    body.appendChild(line);
+    // limit lines
+    while (body.children.length > 14) body.removeChild(body.firstChild);
+    setTimeout(() => line.classList.add('show'), 10);
+    body.scrollTop = body.scrollHeight;
+}
+
+function showAlert(isAttack, msg) {
+    const banner = document.getElementById('alertBanner');
+    const text   = document.getElementById('alertText');
+    const icon   = document.getElementById('alertIcon');
+    banner.className = 'alert-banner visible ' + (isAttack ? 'alert-attack' : 'alert-normal');
+    icon.textContent = isAttack ? '⚠' : '✓';
+    text.textContent = msg;
+    clearTimeout(window._alertTimer);
+    window._alertTimer = setTimeout(() => banner.classList.remove('visible'), 5000);
+}
+
+function flashRed() {
+    const o = document.getElementById('flashOverlay');
+    o.classList.add('flash');
+    setTimeout(() => o.classList.remove('flash'), 300);
+}
+
+// ── Audible alarm (Web Audio API — no audio file needed) ─────────────
+function playAlarm() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const beepAt = (startTime) => {
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(880, startTime);
+            gain.gain.setValueAtTime(0.35, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+            osc.start(startTime);
+            osc.stop(startTime + 0.18);
+        };
+        const now = ctx.currentTime;
+        beepAt(now);
+        beepAt(now + 0.25);
+        beepAt(now + 0.50);
+    } catch(e) {
+        console.warn('Audio alarm unavailable:', e);
+    }
+}
+
+
+async function simulateAttack(type) {
+    const btnMap = { dos: 'dosBtn'};
+    const btn = document.getElementById(btnMap[type]);
+    btn.disabled = true;
+
+    addLog(`Sending ${type.toUpperCase()} request...`, 'log-info');
+
+    try {
+        const res  = await fetch(`/simulate/${type}`, { method: 'POST' });
+        const data = await res.json();
+
+        const isAttack = data.result === 'ATTACK';
+        const conf     = (data.confidence * 100).toFixed(1);
+        const atype    = data.attack_type || type.toUpperCase();
+
+        if (isAttack) {
+            addLog(`⚠ ${atype} DETECTED — confidence: ${conf}%`, 'log-attack');
+            addLog(`  IDS flagged request as MALICIOUS`, 'log-warn');
+            showAlert(true, `⚠ IDS ALERT: ${atype} detected (${conf}% confidence)`);
+            flashRed();
+        } else {
+            addLog(`✓ ${atype} passed — confidence: ${conf}%`, 'log-ok');
+            showAlert(false, `✓ Request classified as NORMAL (${conf}% confidence)`);
+        }
+
+        addLog(`  features: bwd_pkt/s=${parseFloat(data.traffic_data?.bwd_packets_per_s||0).toFixed(0)}, flow_dur=${parseFloat(data.traffic_data?.flow_duration||0).toFixed(0)}`, 'log-info');
+
+    } catch(e) {
+        addLog('Connection error', 'log-attack');
+    }
+
+    setTimeout(() => btn.disabled = false, 1500);
+}
+
+function goTransfer() {
+    addLog('Navigating to transfer console...', 'log-info');
+    window.location.href = '/transfer-page';
+}
+
+function goAirtime() {
+    addLog('Navigating to airtime console...', 'log-info');
+    window.location.href = '/airtime-page';
+}
+
+// Init logs
+window.addEventListener('load', () => {
+    addLog('AI-IDS v2.1 initialized', 'log-ok');
+    addLog('Random forest model loaded — 10 features active', 'log-info');
+    addLog('Monitoring session: SB-DEMO-7721', 'log-ok');
+    addLog('Awaiting activity...', 'log-info');
+});
+</script>
+</body>
+</html>

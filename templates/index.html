@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Intrusion Detection System</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 40px;
+            background-color: #0a0a0a; /* deep black */
+            color: white;
+        }
+
+        .box {
+            background: #111; /* slightly lighter black */
+            padding: 30px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.2);
+        }
+
+        h2 {
+            color: #ff8c00; /* orange accent */
+        }
+
+        input {
+            margin: 8px;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 5px;
+        }
+
+        input::placeholder {
+            color: #888;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #ff8c00; /* orange button */
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #ffa733;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .attack {
+            color: #ff8c00;
+            animation: flash 1s infinite;
+        }
+
+        .normal {
+            color: #ffffff;
+        }
+
+        @keyframes flash {
+            0% {opacity: 1;}
+            50% {opacity: 0.3;}
+            100% {opacity: 1;}
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>AI-Based IDS</h2>
+
+    <input id="fwd_packet_length_max" placeholder="Fwd Packet Length Max"><br>
+    <input id="fwd_packet_length_mean" placeholder="Fwd Packet Length Mean"><br>
+    <input id="subflow_fwd_bytes" placeholder="Subflow Fwd Bytes"><br>
+    <input id="packet_length_mean" placeholder="Packet Length Mean"><br>
+    <input id="average_packet_size" placeholder="Average Packet Size"><br>
+    <input id="psh_flag_count" placeholder="PSH Flag Count"><br>
+    <input id="total_length_fwd_packets" placeholder="Total Length of Fwd Packets"><br>
+    <input id="packet_length_variance" placeholder="Packet Length Variance"><br>
+    <input id="bwd_packets_per_s" placeholder="Bwd Packets/s"><br>
+    <input id="flow_duration" placeholder="Flow Duration"><br>
+
+    <button onclick="sendData()">Check Traffic</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+async function sendData() {
+    const data = {
+
+        fwd_packet_length_max: parseFloat(document.getElementById("fwd_packet_length_max").value),
+        fwd_packet_length_mean: parseFloat(document.getElementById("fwd_packet_length_mean").value),
+        subflow_fwd_bytes: parseFloat(document.getElementById("subflow_fwd_bytes").value),
+        packet_length_mean: parseFloat(document.getElementById("packet_length_mean").value),
+        average_packet_size: parseFloat(document.getElementById("average_packet_size").value),
+        psh_flag_count: parseFloat(document.getElementById("psh_flag_count").value),
+        total_length_fwd_packets: parseFloat(document.getElementById("total_length_fwd_packets").value),
+        packet_length_variance: parseFloat(document.getElementById("packet_length_variance").value),
+        bwd_packets_per_s: parseFloat(document.getElementById("bwd_packets_per_s").value),
+        flow_duration: parseFloat(document.getElementById("flow_duration").value)
+    };
+
+    const response = await fetch("/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    let resultDiv = document.getElementById("result");
+
+    if (result.result === "ATTACK") {
+    resultDiv.innerHTML = "⚠️ ATTACK DETECTED!";
+    resultDiv.className = "attack";
+    document.body.style.backgroundColor = "#1a0000"; // dark black-red tint
+    } else {
+    resultDiv.innerHTML = "✅ NORMAL TRAFFIC";
+    resultDiv.className = "normal";
+    document.body.style.backgroundColor = "#0a0a0a"; // reset to black
+    }
+}
+</script>
+
+</body>
+</html>

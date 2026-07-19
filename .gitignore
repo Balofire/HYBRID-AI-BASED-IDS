@@ -1,0 +1,20 @@
+# Virtual environments
+venv/
+.venv/
+venv
+# PyCharm
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Large datasets
+.csv
+.txt
+
+# Logs
+*.log
+
+# Environment variables
+.env

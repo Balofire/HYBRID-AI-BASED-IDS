@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank – Transfer Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --black:   #050508;
+            --panel:   #0d0d12;
+            --border:  #1e1e2e;
+            --orange:  #ff8c00;
+            --orange2: #ffa733;
+            --red:     #ff3333;
+            --green:   #00ff88;
+            --blue:    #4488ff;
+            --yellow:  #ffcc00;
+            --muted:   #555570;
+            --text:    #c8c8d8;
+            --mono:    'Share Tech Mono', monospace;
+            --sans:    'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,140,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,140,0,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+        .nav-brand {
+            font-size: 20px; font-weight: 700;
+            letter-spacing: 3px; color: #fff; text-transform: uppercase;
+        }
+        .nav-brand span { color: var(--orange); }
+        .nav-right { display: flex; gap: 12px; align-items: center; }
+        .nav-link {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: var(--mono); font-size: 11px;
+            color: var(--muted); text-decoration: none; letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .nav-link:hover { border-color: var(--orange); color: var(--orange); }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .page-header-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #c06000, #ff8c00);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(255,140,0,0.25);
+        }
+        .page-header h1 {
+            font-size: 26px; font-weight: 700; color: #fff; letter-spacing: 2px;
+        }
+        .page-header p {
+            font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .card-header {
+            background: #090910;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 22px;
+        }
+        .card-title {
+            font-family: var(--mono); font-size: 11px;
+            color: var(--muted); letter-spacing: 3px; text-transform: uppercase;
+        }
+        .card-body { padding: 24px; }
+
+        /* ── FORM ── */
+        .field { margin-bottom: 18px; }
+        .field:last-child { margin-bottom: 0; }
+
+        .field label {
+            display: block;
+            font-family: var(--mono); font-size: 10px;
+            color: var(--muted); letter-spacing: 2px;
+            text-transform: uppercase; margin-bottom: 7px;
+        }
+        .field input, .field textarea {
+            width: 100%; padding: 11px 14px;
+            background: #0a0a10;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: #fff;
+            font-family: var(--mono); font-size: 13px;
+            outline: none; resize: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .field input:focus, .field textarea:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.08);
+        }
+        .field input::placeholder, .field textarea::placeholder { color: #25253a; }
+
+        /* ── BALANCE BAR ── */
+        .balance-bar {
+            background: #090910;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance-bar span {
+            font-family: var(--mono); font-size: 11px; color: var(--muted);
+        }
+        .balance-bar b { color: var(--orange); font-size: 16px; }
+
+        /* ── TRANSFER BTN ── */
+        .transfer-btn {
+            width: 100%; padding: 13px;
+            background: var(--orange); color: #000;
+            border: none; border-radius: 8px;
+            font-family: var(--sans); font-size: 15px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-top: 4px;
+            transition: all 0.2s;
+        }
+        .transfer-btn:hover { background: var(--orange2); box-shadow: 0 0 20px rgba(255,140,0,0.35); }
+        .transfer-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── PAYLOAD INJECTORS ── */
+        .payload-grid {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .payload-btn {
+            padding: 10px 14px;
+            border-radius: 7px; border: 1px solid;
+            font-family: var(--mono); font-size: 11px;
+            cursor: pointer; text-align: left;
+            transition: all 0.2s;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .payload-btn .p-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+        .payload-btn .p-text { line-height: 1.4; }
+        .payload-btn .p-label { display: block; font-weight: bold; letter-spacing: 1px; font-size: 11px; }
+        .payload-btn .p-code  { display: block; color: #444455; font-size: 10px; margin-top: 2px; word-break: break-all; }
+
+        .pb-sql { background: rgba(255,51,51,0.06); border-color: rgba(255,51,51,0.2); color: var(--red); }
+        .pb-sql:hover { background: rgba(255,51,51,0.12); border-color: var(--red); }
+        .pb-malform { background: rgba(255,140,0,0.06); border-color: rgba(255,140,0,0.2); color: var(--orange); }
+        .pb-malform:hover { background: rgba(255,140,0,0.12); border-color: var(--orange); }
+        .pb-script { background: rgba(255,204,0,0.06); border-color: rgba(255,204,0,0.2); color: var(--yellow); }
+        .pb-script:hover { background: rgba(255,204,0,0.12); border-color: var(--yellow); }
+        .pb-normal { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.2); color: var(--green); }
+        .pb-normal:hover { background: rgba(0,255,136,0.12); border-color: var(--green); }
+
+        /* ── RESULT BOX ── */
+        .result-box {
+            margin-top: 0;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            grid-column: 1 / -1;
+            display: none;
+        }
+        .result-box.visible { display: block; }
+        .result-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .result-header.attack { background: rgba(255,51,51,0.08); }
+        .result-header.normal { background: rgba(0,255,136,0.06); }
+
+        .result-indicator {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+        .indicator-attack { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+        .indicator-normal { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .result-title { font-size: 16px; font-weight: 700; letter-spacing: 2px; }
+        .result-title.attack { color: var(--red); }
+        .result-title.normal { color: var(--green); }
+        .result-subtitle { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+
+        .result-body { padding: 22px; }
+
+        .metrics-row {
+            display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .metric-chip {
+            background: #0a0a10;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-family: var(--mono);
+            font-size: 11px; color: var(--muted);
+        }
+        .metric-chip b { display: block; font-size: 18px; color: #fff; margin-bottom: 2px; }
+        .metric-chip.highlight b { color: var(--orange); }
+
+        /* ── Feature dump ── */
+
+
+
+        /* ── Flash ── */
+        .flash-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,30,30,0.08);
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.1s; z-index: 999;
+        }
+        .flash-overlay.flash { opacity: 1; }
+
+        @media (max-width: 700px) {
+            .layout { grid-template-columns: 1fr; }
+            .result-box { grid-column: auto; }
+            .metrics-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<nav>
+    <div class="nav-brand">Secure<span>Bank</span></div>
+    <div class="nav-right">
+        <a href="/dashboard" class="nav-link">← DASHBOARD</a>
+        <a href="/logout"    class="nav-link">LOGOUT</a>
+    </div>
+</nav>
+
+<main>
+    <div class="page-header">
+        <div class="page-header-icon">📱</div>
+        <div>
+            <h1>AIRTIME PURCHASE</h1>
+            <p>// SQL INJECTION & MALICIOUS INPUT DETECTION — AI-IDS ACTIVE //</p>
+        </div>
+    </div>
+
+    <div class="layout">
+
+        <!-- Transfer Form -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">// PURCHASE AIRTIME //</div>
+            </div>
+            <div class="card-body">
+                <div class="balance-bar">
+                    <span>AVAILABLE BALANCE</span>
+                    <b>₦ <span id="balanceDisplay">{{ "%.2f"|format(balance) }}</span></b>
+                </div>
+                <div style="background:#060609;border:1px solid #1a1a25;border-radius:7px;padding:10px 14px;margin-bottom:18px;font-family:var(--mono);font-size:11px;color:var(--muted);">
+                    YOUR ACCOUNT: <span style="color:var(--orange);letter-spacing:2px;">{{ account_number }}</span>
+                </div>
+
+                <div class="field">
+                    <label>Recipient Phone Number</label>
+                    <input type="text" id="recipient" placeholder="e.g. 08012345678">
+                </div>
+                <div class="field">
+                    <label>Amount (₦)</label>
+                    <input type="text" id="amount" placeholder="e.g. 5000">
+                </div>
+
+
+                <button class="transfer-btn" id="transferBtn" onclick="doTransfer()">
+                    BUY AIRTIME
+                </button>
+            </div>
+        </div>
+
+        <!-- Payload Injector -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">// INJECT TEST PAYLOADS //</div>
+            </div>
+            <div class="card-body">
+                <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+                    Click a payload to auto-fill the form, then hit BUY AIRTIME to see the IDS react.
+                </div>
+                <div class="payload-grid">
+
+                    <button class="payload-btn pb-sql" onclick="inject('sql1')">
+                        <span class="p-icon">💉</span>
+                        <span class="p-text">
+                            <span class="p-label">SQL INJECTION — CLASSIC</span>
+                            <span class="p-code">recipient: ' OR 1=1 --</span>
+                        </span>
+                    </button>
+
+                    <button class="payload-btn pb-sql" onclick="inject('sql2')">
+                        <span class="p-icon">💉</span>
+                        <span class="p-text">
+                            <span class="p-label">SQL INJECTION — DROP TABLE</span>
+                            <span class="p-code">note: '; DROP TABLE users; --</span>
+                        </span>
+                    </button>
+
+                    <button class="payload-btn pb-sql" onclick="inject('sql3')">
+                        <span class="p-icon">💉</span>
+                        <span class="p-text">
+                            <span class="p-label">SQL INJECTION — UNION SELECT</span>
+                            <span class="p-code">amount: 0 UNION SELECT * FROM accounts</span>
+                        </span>
+                    </button>
+
+                    <button class="payload-btn pb-malform" onclick="inject('malform')">
+                        <span class="p-icon">⚠</span>
+                        <span class="p-text">
+                            <span class="p-label">MALFORMED INPUT</span>
+                            <span class="p-code">amount: ../../etc/passwd</span>
+                        </span>
+                    </button>
+
+
+
+                    <button class="payload-btn pb-normal" onclick="inject('normal')">
+                        <span class="p-icon">✓</span>
+                        <span class="p-text">
+                            <span class="p-label">NORMAL TRANSFER</span>
+                            <span class="p-code">₦5,000 → Jane Doe</span>
+                        </span>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Box (full width) -->
+        <div class="result-box" id="resultBox">
+            <div class="result-header" id="resultHeader">
+                <div class="result-indicator" id="resultIndicator"></div>
+                <div class="result-title" id="resultTitle">SCANNING</div>
+                <div class="result-subtitle" id="resultSubtitle"></div>
+            </div>
+            <div class="result-body">
+                <div class="metrics-row" id="metricsRow"></div>
+            </div>
+        </div>
+
+    </div><!-- /layout -->
+</main>
+
+<script>
+const payloads = {
+    sql1:    { recipient: "' OR 1=1 --",                        amount: "500"  },
+    sql2:    { recipient: "08012345678'; DROP TABLE users; --",  amount: "200"  },
+    sql3:    { recipient: "08012345678",                         amount: "0 UNION SELECT * FROM accounts --" },
+    malform: { recipient: "Jane-000-doe",                    amount: "../../etc/passwd"  },
+    xss:     { recipient: "exec(xp_cmdshell('dir'))",            amount: "200"  },
+    normal:  { recipient: "08012345678",                         amount: "500"  },
+};
+
+function inject(key) {
+    const p = payloads[key];
+    document.getElementById('recipient').value = p.recipient;
+    document.getElementById('amount').value    = p.amount;
+    document.getElementById('recipient').style.borderColor = '#ff8c00';
+    setTimeout(() => document.getElementById('recipient').style.borderColor = '', 600);
+}
+
+async function doTransfer() {
+    const btn       = document.getElementById('transferBtn');
+    const recipient = document.getElementById('recipient').value;
+    const amount    = document.getElementById('amount').value;
+    const note      = '';
+
+    if (!recipient || !amount) {
+        alert('Please fill in recipient and amount.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'SCANNING...';
+
+    try {
+        const res  = await fetch('/airtime', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipient, amount, note })
+        });
+        const data = await res.json();
+        renderResult(data);
+    } catch(e) {
+        console.error(e);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'BUY AIRTIME';
+}
+
+// ── Audible alarm (Web Audio API — no file needed) ──────────────────
+function playAlarm() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const beepAt = (startTime) => {
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type      = 'square';
+            osc.frequency.setValueAtTime(880, startTime);
+            gain.gain.setValueAtTime(0.35, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+            osc.start(startTime);
+            osc.stop(startTime + 0.18);
+        };
+        const now = ctx.currentTime;
+        beepAt(now);
+        beepAt(now + 0.25);
+        beepAt(now + 0.50);
+    } catch(e) {
+        console.warn('Audio alarm unavailable:', e);
+    }
+}
+
+
+function renderResult(data) {
+    const box        = document.getElementById('resultBox');
+    const header     = document.getElementById('resultHeader');
+    const indicator  = document.getElementById('resultIndicator');
+    const title      = document.getElementById('resultTitle');
+    const subtitle   = document.getElementById('resultSubtitle');
+    const metricsRow = document.getElementById('metricsRow');
+    const featDump   = document.getElementById('featureDump');
+
+    box.classList.add('visible');
+
+    const isAttack = data.result === 'ATTACK';
+    const conf     = (data.confidence * 100).toFixed(1);
+    const atype    = data.attack_type || 'UNKNOWN';
+    const blocked  = data.blocked;
+
+    // Header
+    header.className = 'result-header ' + (isAttack ? 'attack' : 'normal');
+    indicator.className = 'result-indicator ' + (isAttack ? 'indicator-attack' : 'indicator-normal');
+
+    title.className   = 'result-title ' + (isAttack ? 'attack' : 'normal');
+    title.textContent = isAttack
+        ? `⚠ ${atype.toUpperCase()} DETECTED — BLOCKED`
+        : `✓ ${atype.toUpperCase()} — ALLOWED`;
+
+    subtitle.textContent = new Date().toLocaleTimeString('en-GB');
+
+    if (isAttack) {
+        flashRed();
+        document.getElementById('flashOverlay').style.background = 'rgba(255,30,30,0.08)';
+    }
+
+    // Update balance if changed
+    if (data.new_balance !== undefined) {
+        document.getElementById('balanceDisplay').textContent = parseFloat(data.new_balance).toFixed(2);
+    }
+
+    // Metrics
+    const recipientChip = data.recipient_name
+        ? `<div class="metric-chip">
+            <b>${data.recipient_name}</b>RECIPIENT${data.recipient_found ? ' ✓' : ' (EXTERNAL)'}
+           </div>`
+        : '';
+    const errorChip = data.error_msg
+        ? `<div class="metric-chip" style="border-color:rgba(255,140,0,0.3);color:var(--orange);">
+            <b style="font-size:12px;">${data.error_msg}</b>NOTE
+           </div>`
+        : '';
+
+    metricsRow.innerHTML = `
+        <div class="metric-chip highlight">
+            <b>${data.result}</b>IDS VERDICT
+        </div>
+        <div class="metric-chip">
+            <b>${conf}%</b>CONFIDENCE
+        </div>
+        <div class="metric-chip">
+            <b>${atype}</b>ATTACK TYPE
+        </div>
+        <div class="metric-chip">
+            <b>${blocked ? 'BLOCKED' : 'ALLOWED'}</b>ACTION
+        </div>
+        ${recipientChip}
+        ${errorChip}
+    `;
+
+    // Feature dump
+
+
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function flashRed() {
+    const o = document.getElementById('flashOverlay');
+    o.classList.add('flash');
+    setTimeout(() => o.classList.remove('flash'), 400);
+}
+</script>
+</body>
+</html>

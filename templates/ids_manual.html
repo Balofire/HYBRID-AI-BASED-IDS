@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Intrusion Detection System – Manual Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --black:   #050508;
+            --panel:   #0d0d12;
+            --border:  #1e1e2e;
+            --orange:  #ff8c00;
+            --orange2: #ffa733;
+            --red:     #ff3333;
+            --green:   #00ff88;
+            --muted:   #555570;
+            --text:    #c8c8d8;
+            --mono:    'Share Tech Mono', monospace;
+            --sans:    'Rajdhani', sans-serif;
+        }
+
+        body {
+            font-family: var(--sans);
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--black);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,140,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,140,0,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 56px; z-index: 100;
+        }
+        .nav-brand {
+            font-size: 18px; font-weight: 700;
+            letter-spacing: 3px; color: #fff; text-transform: uppercase;
+        }
+        .nav-brand span { color: var(--orange); }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: var(--mono); font-size: 11px;
+            color: var(--muted); text-decoration: none;
+            letter-spacing: 1px; transition: all 0.2s;
+        }
+        .nav-link:hover { border-color: var(--orange); color: var(--orange); }
+        .nav-link.active { border-color: var(--orange); color: var(--orange); background: rgba(255,140,0,0.06); }
+
+        /* ── Main content ── */
+        .page-wrap {
+            padding-top: 80px;
+            max-width: 580px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        .page-header .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,140,0,0.08);
+            border: 1px solid rgba(255,140,0,0.2);
+            border-radius: 20px;
+            font-family: var(--mono); font-size: 10px;
+            color: var(--orange); letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+        .page-header h2 {
+            font-size: 28px; font-weight: 700;
+            color: #fff; letter-spacing: 2px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .page-header p {
+            font-family: var(--mono); font-size: 11px;
+            color: var(--muted); letter-spacing: 1px;
+        }
+
+        /* ── Box ── */
+        .box {
+            background: var(--panel);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 30px rgba(255,140,0,0.06);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+        .box::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--orange), transparent);
+        }
+
+        /* ── Section label ── */
+        .section-label {
+            font-family: var(--mono); font-size: 10px;
+            color: var(--muted); letter-spacing: 3px;
+            text-transform: uppercase; margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Input grid ── */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .input-item label {
+            display: block;
+            font-family: var(--mono); font-size: 9px;
+            color: var(--muted); letter-spacing: 2px;
+            text-transform: uppercase; margin-bottom: 6px;
+        }
+        .input-item input {
+            width: 100%; padding: 10px 12px;
+            background: #0a0a10;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: #fff;
+            font-family: var(--mono); font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-item input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.08);
+        }
+        .input-item input::placeholder { color: #222230; }
+
+        /* ── Button row ── */
+        .btn-row {
+            display: flex; gap: 10px; margin-bottom: 0;
+        }
+        .btn-check {
+            flex: 1; padding: 13px;
+            background: var(--orange); color: #000;
+            border: none; border-radius: 8px;
+            font-family: var(--sans); font-size: 15px;
+            font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .btn-check:hover { background: var(--orange2); box-shadow: 0 0 20px rgba(255,140,0,0.35); }
+        .btn-check:active { transform: scale(0.98); }
+
+        .btn-clear {
+            padding: 13px 18px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted); border-radius: 8px;
+            font-family: var(--mono); font-size: 12px;
+            letter-spacing: 1px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover { border-color: var(--orange); color: var(--orange); }
+
+        /* ── Result ── */
+        #result {
+            margin-top: 24px;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: center;
+            min-height: 28px;
+        }
+        .attack {
+            color: var(--orange);
+            animation: flash 1s infinite;
+        }
+        .normal { color: var(--green); }
+        @keyframes flash {
+            0%   { opacity: 1; }
+            50%  { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        /* ── Confidence bar ── */
+        .conf-wrap {
+            margin-top: 16px;
+            display: none;
+        }
+        .conf-wrap.visible { display: block; }
+        .conf-label {
+            font-family: var(--mono); font-size: 10px;
+            color: var(--muted); letter-spacing: 2px;
+            margin-bottom: 6px; display: flex;
+            justify-content: space-between;
+        }
+        .conf-track {
+            height: 6px; background: #1a1a25;
+            border-radius: 3px; overflow: hidden;
+        }
+        .conf-fill {
+            height: 100%; border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.4s;
+        }
+
+        /* ── Preset samples ── */
+        .presets {
+            margin-top: 28px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .presets-header {
+            background: #090910;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+        }
+        .presets-title {
+            font-family: var(--mono); font-size: 10px;
+            color: var(--muted); letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .presets-body {
+            padding: 16px;
+            display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 8px 14px;
+            border-radius: 6px; border: 1px solid;
+            font-family: var(--mono); font-size: 11px;
+            cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+        }
+        .preset-normal  { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.2); color: var(--green); }
+        .preset-normal:hover  { background: rgba(0,255,136,0.12); border-color: var(--green); }
+        .preset-attack  { background: rgba(255,51,51,0.06);  border-color: rgba(255,51,51,0.2);  color: var(--red); }
+        .preset-attack:hover  { background: rgba(255,51,51,0.12);  border-color: var(--red); }
+
+        /* ── Flash overlay ── */
+        .flash-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,30,30,0.08);
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.1s; z-index: 999;
+        }
+        .flash-overlay.flash { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<nav>
+    <div class="nav-brand">Secure<span>Bank</span></div>
+    <div class="nav-links">
+        <a href="/dashboard"   class="nav-link">DASHBOARD</a>
+        <a href="/transfer-page" class="nav-link">TRANSFER</a>
+        <a href="/ids-manual"  class="nav-link active">IDS CONSOLE</a>
+        <a href="/logout"      class="nav-link">LOGOUT</a>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <div class="badge">// MANUAL TESTING MODE //</div>
+        <h2>IDS Prediction Engine</h2>
+        <p>Enter raw network traffic features below to get a live prediction from the model</p>
+    </div>
+
+    <div class="box">
+        <div class="section-label">// INPUT TRAFFIC FEATURES //</div>
+
+        <div class="input-grid">
+            <div class="input-item">
+                <label>Fwd Packet Length Max</label>
+                <input id="fwd_packet_length_max" placeholder="e.g. 1460" type="number">
+            </div>
+            <div class="input-item">
+                <label>Fwd Packet Length Mean</label>
+                <input id="fwd_packet_length_mean" placeholder="e.g. 512" type="number">
+            </div>
+            <div class="input-item">
+                <label>Subflow Fwd Bytes</label>
+                <input id="subflow_fwd_bytes" placeholder="e.g. 2048" type="number">
+            </div>
+            <div class="input-item">
+                <label>Packet Length Mean</label>
+                <input id="packet_length_mean" placeholder="e.g. 400" type="number">
+            </div>
+            <div class="input-item">
+                <label>Average Packet Size</label>
+                <input id="average_packet_size" placeholder="e.g. 420" type="number">
+            </div>
+            <div class="input-item">
+                <label>PSH Flag Count</label>
+                <input id="psh_flag_count" placeholder="e.g. 1" type="number">
+            </div>
+            <div class="input-item">
+                <label>Total Length Fwd Packets</label>
+                <input id="total_length_fwd_packets" placeholder="e.g. 3000" type="number">
+            </div>
+            <div class="input-item">
+                <label>Packet Length Variance</label>
+                <input id="packet_length_variance" placeholder="e.g. 5000" type="number">
+            </div>
+            <div class="input-item">
+                <label>Bwd Packets/s</label>
+                <input id="bwd_packets_per_s" placeholder="e.g. 20" type="number">
+            </div>
+            <div class="input-item">
+                <label>Flow Duration</label>
+                <input id="flow_duration" placeholder="e.g. 500000" type="number">
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-check" onclick="sendData()">RUN PREDICTION</button>
+            <button class="btn-clear" onclick="clearAll()">CLEAR</button>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="conf-wrap" id="confWrap">
+            <div class="conf-label">
+                <span>CONFIDENCE</span>
+                <span id="confPct">0%</span>
+            </div>
+            <div class="conf-track">
+                <div class="conf-fill" id="confFill" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample presets -->
+    <div class="presets">
+        <div class="presets-header">
+            <div class="presets-title">// QUICK-FILL SAMPLE PRESETS //</div>
+        </div>
+        <div class="presets-body">
+            <button class="preset-btn preset-normal" onclick="loadPreset('normal')">✓ Normal Traffic</button>
+            <button class="preset-btn preset-attack" onclick="loadPreset('dos')">⚠ DoS Flood</button>
+            <button class="preset-btn preset-attack" onclick="loadPreset('bruteforce')">⚠ Brute Force</button>
+        </div>
+    </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+const presets = {
+    normal:     { fwd_packet_length_max: 1460, fwd_packet_length_mean: 512,  subflow_fwd_bytes: 2048,   packet_length_mean: 400,  average_packet_size: 420,  psh_flag_count: 1,  total_length_fwd_packets: 3000,   packet_length_variance: 5000,   bwd_packets_per_s: 20,    flow_duration: 500000  },
+    dos:        { fwd_packet_length_max: 0,   fwd_packet_length_mean: 0,   subflow_fwd_bytes: 0, packet_length_mean: 2,   average_packet_size: 3,   psh_flag_count: 1, total_length_fwd_packets: 0,  packet_length_variance: 12,    bwd_packets_per_s: 25000, flow_duration: 43    },
+    bruteforce: { fwd_packet_length_max: 2,   fwd_packet_length_mean: 2,   subflow_fwd_bytes: 2,     packet_length_mean: 3,   average_packet_size: 5,   psh_flag_count: 1,  total_length_fwd_packets: 2,      packet_length_variance: 5,     bwd_packets_per_s: 17000,  flow_duration: 60   }
+};
+
+const fields = [
+    'fwd_packet_length_max','fwd_packet_length_mean','subflow_fwd_bytes',
+    'packet_length_mean','average_packet_size','psh_flag_count',
+    'total_length_fwd_packets','packet_length_variance','bwd_packets_per_s','flow_duration'
+];
+
+function loadPreset(key) {
+    const p = presets[key];
+    fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = p[f];
+    });
+    // flash orange on inputs
+    document.querySelectorAll('.input-item input').forEach(el => {
+        el.style.borderColor = 'var(--orange)';
+        setTimeout(() => el.style.borderColor = '', 500);
+    });
+}
+
+function clearAll() {
+    fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = '';
+    });
+    document.getElementById('result').innerHTML   = '';
+    document.getElementById('result').className   = '';
+    document.getElementById('confWrap').classList.remove('visible');
+    document.body.style.backgroundColor = '';
+}
+
+async function sendData() {
+    const data = {};
+    let empty = false;
+    fields.forEach(f => {
+        const val = parseFloat(document.getElementById(f).value);
+        if (isNaN(val)) empty = true;
+        data[f] = isNaN(val) ? 0 : val;
+    });
+
+    if (empty) {
+        const r = document.getElementById('result');
+        r.innerHTML  = '⚠ Please fill in all fields (or use a preset)';
+        r.className  = 'attack';
+        r.style.fontSize = '14px';
+        setTimeout(() => { r.innerHTML = ''; r.style.fontSize = ''; }, 3000);
+        return;
+    }
+
+    const r = document.getElementById('result');
+    r.innerHTML  = 'SCANNING...';
+    r.className  = '';
+
+    try {
+        const response = await fetch('/predict', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(data)
+        });
+        const result = await response.json();
+        renderResult(result);
+    } catch(e) {
+        r.innerHTML = 'CONNECTION ERROR';
+        r.className = 'attack';
+    }
+}
+
+function renderResult(result) {
+    const r    = document.getElementById('result');
+    const conf = (result.confidence * 100).toFixed(1);
+
+    if (result.result === 'ATTACK') {
+        r.innerHTML = '⚠️ ATTACK DETECTED';
+        r.className = 'attack';
+        document.body.style.backgroundColor = '#0d0500';
+        flashRed();
+    } else {
+        r.innerHTML = '✅ NORMAL TRAFFIC';
+        r.className = 'normal';
+        document.body.style.backgroundColor = 'var(--black)';
+    }
+    r.style.fontSize = '';
+
+    // confidence bar
+    const wrap = document.getElementById('confWrap');
+    const fill = document.getElementById('confFill');
+    const pct  = document.getElementById('confPct');
+    wrap.classList.add('visible');
+    fill.style.width      = conf + '%';
+    fill.style.background = result.result === 'ATTACK' ? 'var(--red)' : 'var(--green)';
+    pct.textContent       = conf + '%';
+}
+
+function flashRed() {
+    const o = document.getElementById('flashOverlay');
+    o.classList.add('flash');
+    setTimeout(() => o.classList.remove('flash'), 350);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendData();
+});
+</script>
+</body>
+</html>
